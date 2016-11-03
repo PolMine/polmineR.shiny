@@ -1,0 +1,22 @@
+Package: polmineR.shiny
+Type: Package
+Title: polmineR.shiny
+Version: 0.2.0
+Date: 2016-11-02
+Author: Andreas Blaette
+Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
+Depends:
+    polmineR
+    shiny
+Imports:
+    miniUI,
+    methods
+Suggests:
+    knitr,
+    shinythemes
+VignetteBuilder: knitr
+LazyData: yes
+Description: Plugin for the polmineR-package
+License: CC BY-NC-SA 3.0 | file LICENSE
+Collate:
+    'polmineR.shiny_package.R'
