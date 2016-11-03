@@ -1,4 +1,4 @@
-#' @rdname context-method
+#' @rdname polmineR_gui
 setMethod("context", "missing", function(){
   if (requireNamespace("shiny", quietly=TRUE)){
     shiny::runApp(system.file("shiny", "context", package="polmineR"), launch.browser=TRUE)  
