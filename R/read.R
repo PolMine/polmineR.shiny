@@ -12,12 +12,4 @@ readUiOutput <- function() uiOutput("read_fulltext")
 #' @export readServer
 readServer <- function(input, output, session){
   
-  # newFulltext <- reactive(fulltext)
-  
-  observeEvent(
-    fulltext,
-    {
-      print("there is something to read!")
-    }
-  )
 }

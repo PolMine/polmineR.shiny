@@ -2,7 +2,13 @@
 #' 
 #' @export polmineR
 #' @rdname polmineR_gui
+#' @import polmineR
+#' @import shiny
+#' @import methods
+#' @import magrittr
+#' @importFrom shinythemes shinytheme
+#' @importFrom miniUI miniPage miniContentPanel gadgetTitleBar miniTitleBarCancelButton miniTitleBarButton
 polmineR <- function(){
   # shiny::runApp("/Users/blaette/Lab/github/polmineR/inst/shiny/gui")
-  shiny::runApp(system.file("shiny", "gui", package="polmineR"))
+  runApp(system.file("shiny", package = "polmineR.shiny"))
 }

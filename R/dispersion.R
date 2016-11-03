@@ -18,7 +18,11 @@ dispersionUiInput <- function(){
     ),
     conditionalPanel(
       condition = "input.dispersion_object == 'partition'",
-      selectInput("dispersion_partition", "partition", choices = partitionNames, selected = partitionNames[1])
+      selectInput(
+        "dispersion_partition", "partition",
+        choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)),
+        selected = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))[1]
+        )
     ),
     textInput("dispersion_query", "query", value="Suche"),
     selectInput(
@@ -48,14 +52,15 @@ dispersionUiOutput <- function(){
 
 #' @rdname shiny_helper_functions
 #' @export dispersionServer
+#' @importFrom zoo zoo
 dispersionServer <- function(input, output, session){
   observe({
     x <- input$dispersion_partition
     if (x != ""){
-      new_sAttr <- sAttributes(get(x, ".GlobalEnv")@corpus)
+      new_sAttr <- sAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
       updateSelectInput(
         session, "dispersion_pAttribute",
-        choices=pAttributes(get(x, ".GlobalEnv")@corpus), selected=NULL
+        choices=pAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus), selected=NULL
       )
       updateSelectInput(session, "dispersion_sAttribute_1", choices=new_sAttr, selected=NULL)
     }

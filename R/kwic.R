@@ -19,7 +19,7 @@ kwicUiInput <- function(drop = NULL){
     ),
     partition = conditionalPanel(
       condition = "input.kwic_object == 'partition'",
-      selectInput("kwic_partition", "partition", choices = partitionNames)
+      selectInput("kwic_partition", "partition", choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)))
     ),
     query = textInput("kwic_query", "query", value = ""),
     neighbor = textInput("kwic_neighbor", "neighbor", value = ""),
@@ -52,14 +52,15 @@ kwicUiOutput <- function(){
 
 
 #' @rdname shiny_helper_functions
+#' @importFrom DT formatStyle datatable
 #' @export kwicServer
 kwicServer <- function(input, output, session, ...){
   
   observe({
     x <- input$kwic_partition
     if (x != ""){
-      new_sAttr <- sAttributes(get(x, ".GlobalEnv")@corpus)
-      new_pAttr <- pAttributes(get(x, ".GlobalEnv")@corpus)
+      new_sAttr <- sAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
+      new_pAttr <- pAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
       updateSelectInput(session, "kwic_pAttribute", choices = new_pAttr, selected = NULL)
       updateSelectInput(session, "kwic_meta", choices = new_sAttr, selected = NULL)
     }
@@ -80,6 +81,7 @@ kwicServer <- function(input, output, session, ...){
     
     isolate({
       
+      startingTime <- get("startingTime", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
       if ((input$kwic_go > 0 || input$kwic_read != startingTime) && input$kwic_query != ""){
         
         if (input$kwic_object == "corpus"){
@@ -91,9 +93,9 @@ kwicServer <- function(input, output, session, ...){
         withProgress(
           message="please wait", value = 0, max = 5, detail="preparing data",
           {
-            kwicObject <<- polmineR::kwic(
+            kwicObject <- polmineR::kwic(
               .Object = object,
-              query = input$kwic_query,
+              query = rectifySpecialChars(input$kwic_query),
               pAttribute = ifelse(is.null(input$kwic_pAttribute), "word", input$kwic_pAttribute),
               left = input$kwic_left,
               right = input$kwic_right,
@@ -102,11 +104,15 @@ kwicServer <- function(input, output, session, ...){
               neighbor = input$kwic_neighbor,
               cpos = TRUE # required for reading
             )
+            assign(
+              "kwicObject", kwicObject,
+              envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
+              )
           }
         ) # end withProgress
         
         if (is.null(kwicObject)){
-          tab <- data.frame(left = "", node = "", right = "")
+          tab <- data.frame(left = ""[0], node = ""[0], right = ""[0])
         } else {
           tab <- kwicObject@table
         }
@@ -124,7 +130,7 @@ kwicServer <- function(input, output, session, ...){
         }
         
       } else {
-        retval <- data.frame(left = "", node = "", right = "")
+        retval <- data.frame(left = ""[0], node = ""[0], right = ""[0])
       }
       
     })
@@ -144,12 +150,13 @@ kwicServer <- function(input, output, session, ...){
     input$kwic_table_rows_selected,
     {
       if (length(input$kwic_table_rows_selected) > 0){
+        kwicObject <- get("kwicObject", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
         fulltext <- html(kwicObject, input$kwic_table_rows_selected, type = "plpr", verbose = TRUE)
         fulltext <- htmltools::HTML(gsub("<head>.*?</head>", "", as.character(fulltext)))
         fulltext <- htmltools::HTML(gsub('<blockquote>', '<blockquote style="font-size:14px">', as.character(fulltext)))
         output$read_fulltext <- renderUI(fulltext)
+        
         updateNavbarPage(session, "polmineR", selected = "read")
-        # browse(fulltext)
       }
     })
   
@@ -158,11 +165,8 @@ kwicServer <- function(input, output, session, ...){
 
 
 
-#' @rdname kwic
+#' @rdname polmineR_gui
 setMethod("kwic", "missing", function(){
-  
-  if (require("miniUI", quietly = TRUE) && require("shinythemes", quietly = TRUE) && require("shiny", quietly = TRUE) && require("magrittr", quietly = TRUE)){
-    
     assign(
       "partitionNames",
       value = unlist(sapply(c("partition", "pressPartition", "plprPartition"), getObjects)),
@@ -179,18 +183,15 @@ setMethod("kwic", "missing", function(){
       ),
       div(br()),
       sidebarLayout(
-        sidebarPanel = sidebarPanel(.kwicUiInput(drop = c("go", "br1", "br2", "pAttribute", "read"))),
-        mainPanel = mainPanel(.kwicUiOutput())
+        sidebarPanel = sidebarPanel(kwicUiInput(drop = c("go", "br1", "br2", "pAttribute", "read"))),
+        mainPanel = mainPanel(kwicUiOutput())
       )
     ))
     
     returnValue <- runGadget(
-      app = shinyApp(ui = kwicGadgetUI, server = .kwicServer),
+      app = shinyApp(ui = kwicGadgetUI, server = kwicServer),
       viewer = browserViewer()
     )
     return(returnValue)
     
-  } else {
-    warning("One of the following packages is missing: miniUI, shinythemes, shiny")
-  }
 })

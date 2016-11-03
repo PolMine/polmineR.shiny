@@ -18,7 +18,7 @@ contextUiInput <- function(){
     ),
     conditionalPanel(
       condition = "input.context_object == 'partition'",
-      selectInput("context_partition", "partition", choices = partitionNames)
+      selectInput("context_partition", "partition", choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)))
     ),
     textInput("context_query", "query", value = ""),
     selectInput("context_pAttribute", "pAttribute:", choices=c("word", "pos", "lemma"), selected = getOption("polmineR.pAttribute"), multiple=TRUE),
@@ -61,36 +61,43 @@ contextServer <- function(input, output, session){
           }
           object <- get(input$context_corpus, envir = get(".corpora", .GlobalEnv))
         } else {
-          object <- get(input$context_partition, '.GlobalEnv')
+          object <- get(input$context_partition, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
         }
         
         withProgress(
           message = "please wait ...", value = 0, max = 6, detail = "getting started",
           {
-            ctext <<- context(
+            ctext <- context(
               .Object = object,
-              query = input$context_query,
+              query = rectifySpecialChars(input$context_query),
               pAttribute = input$context_pAttribute,
               left = input$context_left[1], right = input$context_right[1],
               verbose="shiny"
             )
+            assign("ctext", ctext, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
           })
+        
         if (!is.null(ctext)){
-          return(DT::datatable(round(ctext, 2)@stat, selection="single", rownames=FALSE))
+          return(DT::datatable(round(ctext, 2)@stat, selection = "single", rownames = FALSE))
         } else {
           return(DT::datatable(data.frame(a = c(), b = c(), d = c())))
         }
+      } else {
+        retval <- data.frame(
+          word = ""[0], count_window = ""[0], count_partition = ""[0],
+          exp_window = integer(), exp_partition = integer(), ll = integer(),
+          rank_ll = integer()
+        )
+        return(retval)
       }
     })
-    if (!exists("ctext")){
-      return(DT::datatable(data.frame(a = c(), b = c(), d = c())))
-    }
   })
   
   observeEvent(
     input$context_table_rows_selected,
     {
       if (length(input$context_table_rows_selected) > 0){
+        ctext <- get("ctext", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
         updateTextInput(
           session, "kwic_neighbor",
           value = ctext@stat[[input$context_pAttribute[1]]][input$context_table_rows_selected]
@@ -111,6 +118,8 @@ contextServer <- function(input, output, session){
         updateSelectInput(session, "kwic_read", choices = Time, selected = Time)
       }
     })
+  
+
 }
 
 

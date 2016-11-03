@@ -4,9 +4,12 @@
 #' @param input input
 #' @param output output
 #' @param session session
+#' @param drop elements to drop
+#' @param ... further parameters
 #' @rdname shiny_helper_functions
 #' @export partitionUiInput
 #' @import shiny
+#' @importFrom DT renderDataTable dataTableOutput
 partitionUiInput <- function(){
   list(
     go = actionButton("partition_go", label="", icon=icon("play", lib="glyphicon")),
@@ -29,7 +32,7 @@ partitionUiInput <- function(){
 #' @rdname shiny_helper_functions
 #' @export partitionUiOutput
 partitionUiOutput <- function(){
-  dataTableOutput('partition_table')
+  DT::dataTableOutput('partition_table')
 }
 
 
@@ -43,8 +46,9 @@ partitionServer <- function(input, output, session){
       if (input$partition_go > 0){
         defList <- lapply(
           setNames(input$partition_sAttributes, input$partition_sAttributes),
-          function(x) gsub('\u201E', '"', input[[x]]) 
+          function(x) input[[x]]
         )
+        print(defList)
         assign(
           input$partition_name,
           partition(
@@ -57,15 +61,16 @@ partitionServer <- function(input, output, session){
             mc = FALSE,
             verbose = TRUE
           ),
-          envir=.GlobalEnv
+          envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
         )
-        partitionDf <- partition()
-        if (nrow(partitionDF) == 0){
+        partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
+        if (nrow(partitionDf) == 0){
           partitionDF <- data.frame(
             object = ""[0], name = ""[0], corpus = ""[0], size = integer()
           )
-        } 
-        rownames(partitionDf) <- NULL
+        } else {
+          rownames(partitionDf) <- NULL  
+        }
         output$partition_table <- DT::renderDataTable(partitionDf)
         
         for (toUpdate in selectInputToUpdate) {
@@ -88,7 +93,12 @@ partitionServer <- function(input, output, session){
   output$partition_sAttributes <- renderUI({
     tagList(lapply(
       input$partition_sAttributes,
-      function(x) textInput(x, x)
+      function(x){
+        selectInput(
+          inputId = x, label = x, multiple = TRUE,
+          choices = sAttributes(input$partition_corpus, x)
+          )
+      } 
     ))
   })
   
@@ -99,7 +109,7 @@ partitionServer <- function(input, output, session){
         as.character(input$partition_corpus),
         def = lapply(
           setNames(input$partition_sAttributes, input$partition_sAttributes),
-          function(x) gsub('\u201E', '"', input[[x]]) 
+          rectifySpecialChars
         ),
         name = input$partition_name,
         pAttribute = input$partition_pAttribute,
@@ -113,56 +123,55 @@ partitionServer <- function(input, output, session){
     }
   )
   
-  output$partition_table <- renderDataTable(partition())
+  output$partition_table <- DT::renderDataTable(
+    data.frame(object = ""[0], name = ""[0], corpus = ""[0], size = integer())
+    )
   
 }
 
 #' @export partitionGadget
+#' @rdname polmineR_gui
 partitionGadget <- function(){
-  if (require("miniUI", quietly = TRUE) && require("shinythemes", quietly = TRUE) && require("shiny", quietly = TRUE)){
-    partitionGadgetUI <- miniPage(
-      theme = shinytheme("cerulean"),
-      gadgetTitleBar(
-        "Create partition",
-        left = miniTitleBarCancelButton(),
-        right = miniTitleBarButton(inputId = "partition_done", label = "Go", primary = TRUE)
+  partitionGadgetUI <- miniPage(
+    theme = shinytheme("cerulean"),
+    gadgetTitleBar(
+      "Create partition",
+      left = miniTitleBarCancelButton(),
+      right = miniTitleBarButton(inputId = "partition_done", label = "Go", primary = TRUE)
+    ),
+    miniContentPanel(
+      fillPage(
+        fillRow(
+          fillCol(
+            div(partitionUiInput()[["corpus"]],
+                partitionUiInput()[["name"]],
+                partitionUiInput()[["pAttribute"]],
+                partitionUiInput()[["regex"]],
+                partitionUiInput()[["xml"]]
+            )
+          ),
+          fillCol(br()),
+          fillCol(
+            div(
+              partitionUiInput()[["sAttributesA"]],
+              partitionUiInput()[["sAttributesB"]]
+            )
+          ),
+          flex = c(1,0.1, 1)
+        )
+        
       ),
-      miniContentPanel(
-        fillPage(
-          fillRow(
-            fillCol(
-              div(partitionUiInput()[["corpus"]],
-                  partitionUiInput()[["name"]],
-                  partitionUiInput()[["pAttribute"]],
-                  partitionUiInput()[["regex"]],
-                  partitionUiInput()[["xml"]]
-              )
-            ),
-            fillCol(br()),
-            fillCol(
-              div(
-                partitionUiInput()[["sAttributesA"]],
-                partitionUiInput()[["sAttributesB"]]
-              )
-            ),
-            flex = c(1,0.1, 1)
-          )
-          
-        ),
-        padding = 10
-      )
+      padding = 10
     )
-    
-    returnValue <- runGadget(
-      app = shinyApp(
-        ui = partitionGadgetUI,
-        server = partitionServer
-      ),
-      viewer = paneViewer()
-    )
-    return(returnValue)
-    
-  } else {
-    warning("miniUI and/or shinythemes not installed")
-  }
+  )
+  
+  returnValue <- runGadget(
+    app = shinyApp(
+      ui = partitionGadgetUI,
+      server = partitionServer
+    ),
+    viewer = paneViewer()
+  )
+  return(returnValue)
+  
 }
