@@ -7,13 +7,13 @@ Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Depends:
     polmineR,
-    shiny,
-    methods,
-    magrittr
+    methods
 Imports:
     miniUI,
+    shiny,
     shinythemes,
     htmltools,
+    data.table,
     DT,
     zoo
 Suggests:

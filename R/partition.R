@@ -8,11 +8,11 @@
 #' @param ... further parameters
 #' @rdname shiny_helper_functions
 #' @export partitionUiInput
-#' @import shiny
+#' @import methods
 #' @importFrom DT renderDataTable dataTableOutput
 partitionUiInput <- function(){
   list(
-    go = actionButton("partition_go", label="", icon=icon("play", lib="glyphicon")),
+    go = actionButton("partition_go", label="", icon = icon("play", lib="glyphicon")),
     br(),
     br(),
     corpus = selectInput("partition_corpus", "corpus", choices = corpus(), selected = corpus()[1]),
@@ -42,26 +42,30 @@ partitionServer <- function(input, output, session){
   observeEvent(
     input$partition_go,
     {
-      selectInputToUpdate <- c("kwic_partition", "context_partition", "dispersion_partition")
+      
       if (input$partition_go > 0){
         defList <- lapply(
           setNames(input$partition_sAttributes, input$partition_sAttributes),
           function(x) input[[x]]
         )
-        print(defList)
-        assign(
-          input$partition_name,
-          partition(
-            as.character(input$partition_corpus),
-            def = defList,
-            name = input$partition_name,
-            pAttribute = input$partition_pAttribute,
-            regex = input$partition_regex,
-            xml = input$partition_xml,
-            mc = FALSE,
-            verbose = TRUE
-          ),
-          envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
+        withProgress(
+          message = "please wait ...", value = 0, max = 3, detail = "getting started",
+          {
+            assign(
+              input$partition_name,
+              partition(
+                as.character(input$partition_corpus),
+                def = defList,
+                name = input$partition_name,
+                pAttribute = input$partition_pAttribute,
+                regex = input$partition_regex,
+                xml = input$partition_xml,
+                mc = FALSE,
+                verbose = "shiny"
+              ),
+              envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
+            )
+          }
         )
         partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
         if (nrow(partitionDf) == 0){
@@ -73,9 +77,11 @@ partitionServer <- function(input, output, session){
         }
         output$partition_table <- DT::renderDataTable(partitionDf)
         
-        for (toUpdate in selectInputToUpdate) {
-          updateSelectInput(session, toUpdate, choices=partitionDf$object, selected=NULL)  
-        }
+        # when a new partition is available, update partition in other tabs
+        # selectInputToUpdate <- c("kwic_partition", "context_partition", "dispersion_partition")
+        # for (toUpdate in selectInputToUpdate) {
+        #   updateSelectInput(session, toUpdate, choices = partitionDf$object, selected = NULL)  
+        # }
       }
     }
   )

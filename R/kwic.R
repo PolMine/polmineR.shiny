@@ -6,6 +6,7 @@
 
 
 #' @rdname shiny_helper_functions
+#' @importFrom DT formatStyle
 #' @export kwicUiInput
 kwicUiInput <- function(drop = NULL){
   divs = list(
@@ -87,7 +88,7 @@ kwicServer <- function(input, output, session, ...){
         if (input$kwic_object == "corpus"){
           object <- input$kwic_corpus
         } else {
-          object <- get(input$kwic_partition, '.GlobalEnv')
+          object <- get(input$kwic_partition, get(".polmineR_shiny_cache", envir = .GlobalEnv))
         }
         
         withProgress(
@@ -136,9 +137,9 @@ kwicServer <- function(input, output, session, ...){
     })
     
     # format DataTable
-    retval <- DT::datatable(retval, selection = "single", rownames = FALSE) %>% 
-      DT::formatStyle("node", color = "#4863A0", textAlign = "center") %>%
-      DT::formatStyle("left", textAlign = "right")
+    retval <- DT::datatable(retval, selection = "single", rownames = FALSE)
+    retval <- DT::formatStyle(retval, "node", color = "#4863A0", textAlign = "center")
+    retval <- DT::formatStyle(retval, "left", textAlign = "right")
     if (length(input$kwic_meta) > 0){
       retval <- DT::formatStyle(
         retval, "meta", fontStyle = "italic", textAlign = "left", borderRight = "1px solid DarkGray")
