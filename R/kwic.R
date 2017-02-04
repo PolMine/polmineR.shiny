@@ -10,7 +10,8 @@
 #' @export kwicUiInput
 kwicUiInput <- function(drop = NULL){
   divs = list(
-    go = actionButton("kwic_go", "Go!"),
+    go = actionButton("kwic_go", "", icon = icon("play", lib = "glyphicon")),
+    mail = actionButton("kwic_mail", "", icon = icon("envelope", lib = "glyphicon")),
     br1 = br(),
     br2 = br(),
     object = radioButtons("kwic_object", "class", choices = list("corpus", "partition"), selected = "corpus", inline = TRUE),
@@ -160,6 +161,18 @@ kwicServer <- function(input, output, session, ...){
         updateNavbarPage(session, "polmineR", selected = "read")
       }
     })
+  
+  observeEvent(
+    input$kwic_mail,
+    {
+      if (input$kwic_mail > 0){
+        polmineR:::mail(
+          get("kwicObject", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+        )
+      }
+    }
+  )
+  
   
 }
 

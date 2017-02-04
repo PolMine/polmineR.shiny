@@ -10,7 +10,8 @@
 #' @export dispersionUiInput
 dispersionUiInput <- function(){
   list(
-    actionButton("dispersion_go", "Go!"),
+    actionButton("dispersion_go", "", icon = icon("play", lib = "glyphicon")),
+    # actionButton("dispersion_mail", "", icon = icon("envelope", lib = "glyphicon")),
     br(), br(),
     radioButtons("dispersion_object", "class", choices = list("corpus", "partition"), selected = "corpus", inline = TRUE),
     conditionalPanel(
@@ -125,5 +126,17 @@ dispersionServer <- function(input, output, session){
       
     })
   )
+  
+  # observeEvent(
+  #   input$dispersion_mail,
+  #   {
+  #     if (input$dispersion_mail > 0){
+  #       polmineR:::mail(
+  #         get("ctext", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+  #       )
+  #     }
+  #   }
+  # )
+  
 }
 

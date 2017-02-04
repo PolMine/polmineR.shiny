@@ -32,6 +32,23 @@ shinyUI(
     ),
     
     tabPanel(
+      "keywords",
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(featuresUiInput()),
+        mainPanel = mainPanel(featuresUiOutput())
+      )
+    ),
+    
+    tabPanel(
+      "count",
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(countUiInput()),
+        mainPanel = mainPanel(countUiOutput())
+      )
+    ),
+    
+    
+    tabPanel(
       "read",
       fluidPage(
         fluidRow(
@@ -53,7 +70,14 @@ shinyUI(
           )
         )
       )
-    )
+    ),
     
-   )
+    tabPanel(
+      "settings",
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(settingsUiInput()),
+        mainPanel = mainPanel(settingsUiOutput())
+      )
+    )
+  )
 )

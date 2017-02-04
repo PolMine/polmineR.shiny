@@ -9,7 +9,8 @@
 #' @export contextUiInput
 contextUiInput <- function(){
   list(
-    actionButton("context_go", "Go!"),
+    actionButton("context_go", "", icon = icon("play", lib = "glyphicon")),
+    actionButton("context_mail", "", icon = icon("envelope", lib = "glyphicon")),
     br(), br(),
     radioButtons("context_object", "class", choices = list("corpus", "partition"), selected = "corpus", inline = TRUE),
     conditionalPanel(
@@ -119,7 +120,16 @@ contextServer <- function(input, output, session){
       }
     })
   
-
+  observeEvent(
+    input$context_mail,
+    {
+      if (input$context_mail > 0){
+        polmineR:::mail(
+          subset(round(get("ctext", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)), 2), rank_ll < 100)
+          )
+      }
+    }
+  )
 }
 
 

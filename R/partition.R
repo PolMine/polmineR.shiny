@@ -77,11 +77,10 @@ partitionServer <- function(input, output, session){
         }
         output$partition_table <- DT::renderDataTable(partitionDf)
         
-        # when a new partition is available, update partition in other tabs
-        # selectInputToUpdate <- c("kwic_partition", "context_partition", "dispersion_partition")
-        # for (toUpdate in selectInputToUpdate) {
-        #   updateSelectInput(session, toUpdate, choices = partitionDf$object, selected = NULL)  
-        # }
+        selectInputToUpdate <- c("kwic_partition", "context_partition", "dispersion_partition", "features_partition_x", "features_partition_y", "count_partition")
+        for (toUpdate in selectInputToUpdate) {
+          updateSelectInput(session, toUpdate, choices = partitionDf$object, selected = NULL)
+        }
       }
     }
   )

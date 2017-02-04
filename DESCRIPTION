@@ -29,6 +29,8 @@ Collate:
     'polmineR.R'
     'read.R'
     'dispersion.R'
+    'features.R'
     'utils.R'
+    'settings.R'
     'zzz.R'
 RoxygenNote: 5.0.1
