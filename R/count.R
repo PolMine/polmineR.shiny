@@ -18,14 +18,14 @@ countUiInput <- function(){
 
 
 #' @rdname shiny_helper_functions
-#' @export featuresUiOutput
+#' @export countUiOutput
 countUiOutput <- function(){
   DT::dataTableOutput('count_table')
 }
 
 
 #' @rdname shiny_helper_functions
-#' @export featuresServer
+#' @export countServer
 countServer <- function(input, output, session){
 
   output$count_table <- DT::renderDataTable({

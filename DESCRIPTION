@@ -27,6 +27,7 @@ Collate:
     'context.R'
     'kwic.R'
     'polmineR.R'
+    'count.R'
     'read.R'
     'dispersion.R'
     'features.R'
