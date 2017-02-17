@@ -1,0 +1,4 @@
+v0.2.1
+======
+* window slider for kwic and context method (previously: separate left and right sliders)
+* debugging: available corpora for partition tab

@@ -15,7 +15,7 @@ partitionUiInput <- function(){
     go = actionButton("partition_go", label="", icon = icon("play", lib="glyphicon")),
     br(),
     br(),
-    corpus = selectInput("partition_corpus", "corpus", choices = corpus(), selected = corpus()[1]),
+    corpus = selectInput("partition_corpus", "corpus", choices = corpus()[["corpus"]], selected = corpus()[["corpus"]][1]),
     name = textInput(inputId = "partition_name", label = "name", value = "UNDEFINED"),
     sAttributesA = selectInput(
       inputId = "partition_sAttributes", label = "sAttributes", multiple = TRUE,

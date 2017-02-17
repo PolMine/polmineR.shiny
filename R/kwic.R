@@ -34,8 +34,7 @@ kwicUiInput <- function(drop = NULL){
       "kwic_pAttribute", "pAttribute",
       choices = pAttributes(corpus()[["corpus"]][1])
     ),
-    left = sliderInput("kwic_left", "left", min = 1, max = 25, value = getOption("polmineR.left")),
-    right = sliderInput("kwic_right", "right", min = 1, max = 25, value = getOption("polmineR.right")),
+    window = sliderInput("kwic_window", "window", min = 1, max = 25, value = getOption("polmineR.left")),
     read = conditionalPanel(
       condition = "input.kwic_go == -1",
       selectInput("kwic_read", "read", choices = Sys.time())
@@ -99,8 +98,8 @@ kwicServer <- function(input, output, session, ...){
               .Object = object,
               query = rectifySpecialChars(input$kwic_query),
               pAttribute = ifelse(is.null(input$kwic_pAttribute), "word", input$kwic_pAttribute),
-              left = input$kwic_left,
-              right = input$kwic_right,
+              left = input$kwic_window,
+              right = input$kwic_window,
               meta = input$kwic_meta,
               verbose = "shiny",
               neighbor = input$kwic_neighbor,

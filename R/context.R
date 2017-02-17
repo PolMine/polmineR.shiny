@@ -22,9 +22,8 @@ contextUiInput <- function(){
       selectInput("context_partition", "partition", choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)))
     ),
     textInput("context_query", "query", value = ""),
-    selectInput("context_pAttribute", "pAttribute:", choices=c("word", "pos", "lemma"), selected = getOption("polmineR.pAttribute"), multiple=TRUE),
-    sliderInput("context_left", "left", min = 1, max = 25, value = getOption("polmineR.left")),
-    sliderInput("context_right", "right", min = 1, max = 25, value = getOption("polmineR.right")),
+    selectInput("context_pAttribute", "pAttribute:", choices = c("word", "pos", "lemma"), selected = getOption("polmineR.pAttribute"), multiple = TRUE),
+    sliderInput("context_window", "window", min = 1, max = 25, value = getOption("polmineR.left")),
     br()
   )
 }
@@ -72,8 +71,8 @@ contextServer <- function(input, output, session){
               .Object = object,
               query = rectifySpecialChars(input$context_query),
               pAttribute = input$context_pAttribute,
-              left = input$context_left[1], right = input$context_right[1],
-              verbose="shiny"
+              left = input$context_window[1], right = input$context_window[1],
+              verbose = "shiny"
             )
             assign("ctext", ctext, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
           })
@@ -111,8 +110,7 @@ contextServer <- function(input, output, session){
           updateSelectInput(session, "kwic_corpus", selected = input$context_corpus)
         }
         updateTextInput(session, "kwic_query", value = input$context_query)
-        updateSelectInput(session, "kwic_left", selected = input$context_left)
-        updateSelectInput(session, "kwic_right", selected = input$context_right)
+        updateSelectInput(session, "kwic_window", selected = input$context_window)
         updateSelectInput(session, "kwic_pAttribute", selected = input$context_pAttribute)
         updateNavbarPage(session, "polmineR", selected = "kwic")
         Time <- as.character(Sys.time())
