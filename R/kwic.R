@@ -82,6 +82,7 @@ kwicServer <- function(input, output, session, ...){
     
     isolate({
       
+      print(getOption("polmineR.left"))
       startingTime <- get("startingTime", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
       if ((input$kwic_go > 0 || input$kwic_read != startingTime) && input$kwic_query != ""){
         
@@ -116,6 +117,7 @@ kwicServer <- function(input, output, session, ...){
           tab <- data.frame(left = ""[0], node = ""[0], right = ""[0])
         } else {
           tab <- kwicObject@table
+          tab[["hit_no"]] <- NULL
         }
         
         if (length(input$kwic_meta) == 0 && nrow(tab) > 0){
@@ -152,7 +154,12 @@ kwicServer <- function(input, output, session, ...){
     {
       if (length(input$kwic_table_rows_selected) > 0){
         kwicObject <- get("kwicObject", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
-        fulltext <- html(kwicObject, input$kwic_table_rows_selected, type = "plpr", verbose = TRUE)
+        corpusType <- RegistryFile$new(kwicObject@corpus)$getProperties()[["type"]]
+        fulltext <- html(kwicObject,
+                         input$kwic_table_rows_selected,
+                         type = corpusType,
+                         verbose = TRUE
+                         )
         fulltext <- htmltools::HTML(gsub("<head>.*?</head>", "", as.character(fulltext)))
         fulltext <- htmltools::HTML(gsub('<blockquote>', '<blockquote style="font-size:14px">', as.character(fulltext)))
         output$read_fulltext <- renderUI(fulltext)
