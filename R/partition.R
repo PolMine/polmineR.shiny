@@ -48,6 +48,9 @@ partitionServer <- function(input, output, session){
           setNames(input$partition_sAttributes, input$partition_sAttributes),
           function(x) input[[x]]
         )
+        # to avid an error, if no sAttribute value has been entered
+        if (any(sapply(defList, is.null))) return()
+        
         withProgress(
           message = "please wait ...", value = 0, max = 3, detail = "getting started",
           {
