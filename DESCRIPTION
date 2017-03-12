@@ -23,6 +23,7 @@ LazyData: yes
 Description: A set of shiny widgets and apps to pimp the polmineR package.
 License: GPL-3
 Collate:
+    'corpus.R'
     'partition.R'
     'context.R'
     'kwic.R'

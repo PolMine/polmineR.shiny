@@ -9,6 +9,20 @@ shinyUI(
     id = "polmineR",
     
     tabPanel(
+      "corpus",
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(corpusUiInput()),
+        mainPanel = mainPanel(
+          tabsetPanel(
+            tabPanel("info", uiOutput('corpus_info')),
+            tabPanel("summary", DT::dataTableOutput('info_table'))
+          )
+        )
+      )
+    ),
+    
+    
+    tabPanel(
       "partition",
       sidebarLayout(
         sidebarPanel = sidebarPanel(partitionUiInput()),
