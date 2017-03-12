@@ -19,3 +19,6 @@ if (!".corpora" %in% names(.GlobalEnv)){
   message("... creating environment '.corpora'")
   .corpora <- new.env(parent = .GlobalEnv)
 }
+
+values <- reactiveValues()
+values[["partitions"]] <- list()

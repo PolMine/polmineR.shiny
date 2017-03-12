@@ -59,9 +59,9 @@ kwicServer <- function(input, output, session, ...){
   
   observe({
     x <- input$kwic_partition
-    if (x != ""){
-      new_sAttr <- sAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
-      new_pAttr <- pAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
+    if (x != "" && length(values$partitions) > 0 && input$kwic_partition %in% names(values$partitions)){
+      new_sAttr <- sAttributes(values$partitions[[input$kwic_partition]]@corpus)
+      new_pAttr <- pAttributes(values$partitions[[input$kwic_partition]]@corpus)
       updateSelectInput(session, "kwic_pAttribute", choices = new_pAttr, selected = NULL)
       updateSelectInput(session, "kwic_meta", choices = new_sAttr, selected = NULL)
     }
@@ -82,7 +82,6 @@ kwicServer <- function(input, output, session, ...){
     
     isolate({
       
-      print(getOption("polmineR.left"))
       startingTime <- get("startingTime", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
       if ((input$kwic_go > 0 || input$kwic_read != startingTime) && input$kwic_query != ""){
         

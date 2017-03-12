@@ -1,12 +1,17 @@
 .makePartitionDf <- function(){
-  partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
-  if (nrow(partitionDf) == 0){
-    partitionDF <- data.frame(name = ""[0], corpus = ""[0], size = integer())
+  if (length(values$partitions) == 0){
+    return(
+      data.frame(name = character(), corpus = character(), size = integer())
+    )
   } else {
-    rownames(partitionDf) <- NULL  
-    partitionDf[["object"]] <- NULL # identical with col 'name'
+    return(
+      data.frame(
+        name = sapply(values$partitions, function(x) x@name),
+        corpus = sapply(values$partitions, function(x) x@corpus),
+        size = sapply(values$partitions, function(x) x@size)
+      )
+    )
   }
-  partitionDf
 }
 
 
@@ -60,7 +65,7 @@ partitionServer <- function(input, output, session){
   observeEvent(
     input$partition_go,
     {
-      # if (input$partition_go > 0){
+      if (input$partition_go > 0){
         defList <- lapply(
           setNames(input$partition_sAttributes, input$partition_sAttributes),
           function(x) input[[x]]
@@ -83,10 +88,11 @@ partitionServer <- function(input, output, session){
               )
             }
           )
-          assign(
-            input$partition_name, P,
-            envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
-          )
+          # assign(
+          #   input$partition_name, P,
+          #   envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
+          # )
+          values$partitions[[input$partition_name]] <- P
         }
         
         # update table with partitions
@@ -96,9 +102,9 @@ partitionServer <- function(input, output, session){
         # make partitions available to functions
         selectInputToUpdate <- c("kwic_partition", "context_partition", "dispersion_partition", "features_partition_x", "features_partition_y", "count_partition")
         for (toUpdate in selectInputToUpdate) {
-          updateSelectInput(session, toUpdate, choices = partitionDf$name, selected = NULL)
+          updateSelectInput(session, toUpdate, choices = names(values$partitions), selected = NULL)
         }
-      # }
+      }
     }
   )
   
@@ -129,11 +135,14 @@ partitionServer <- function(input, output, session){
     {
       if (length(input$partition_table_rows_selected) > 0){
         toDrop <- input$partition_table_rows_selected
-        partitionsToDrop <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]][toDrop]
+        # partitionsToDrop <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]][toDrop]
         # for (x in partitionsToDrop){
           # print(x)
-          rm(list = partitionsToDrop, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+          # rm(list = partitionsToDrop, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
         # }
+        for (x in .makePartitionDf()[toDrop]){
+          values$partitions[[toDrop]] <- NULL
+        }
         output$partition_table <- DT::renderDataTable(.makePartitionDf())
       }
     })

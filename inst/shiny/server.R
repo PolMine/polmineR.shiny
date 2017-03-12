@@ -1,5 +1,5 @@
 shinyServer(function(input, output, session) {
-
+  
   corpusServer(input, output, session)
   partitionServer(input, output, session)
   kwicServer(input, output, session)

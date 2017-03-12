@@ -52,7 +52,7 @@ countServer <- function(input, output, session){
         .Object <- switch(
           input$count_object,
           corpus = get(input$count_corpus, envir = get(".corpora", .GlobalEnv)),
-          partition = get(input$count_partition, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+          partition = values$partition[[input$count_partition]]
         )
         
         if (input$count_query == ""){

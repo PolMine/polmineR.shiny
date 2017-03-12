@@ -60,9 +60,9 @@ dispersionServer <- function(input, output, session){
   
   observe({
     x <- input$dispersion_partition
-    if (x != ""){
-      new_sAttr <- sAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
-      new_pAttr <- pAttributes(get(x, envir = get(".polmineR_shiny_cache", .GlobalEnv))@corpus)
+    if (x != "" && length(values$partitions) > 0 && x %in% names(values$partitions)){
+      new_sAttr <- sAttributes(values$partitions[[x]]@corpus)
+      new_pAttr <- pAttributes(values$partitions[[x]]@corpus)
       updateSelectInput(session, "dispersion_pAttribute", choices = new_pAttr, selected = NULL)
       updateSelectInput(session, "dispersion_sAttribute_1", choices = new_sAttr, selected = NULL)
     }
