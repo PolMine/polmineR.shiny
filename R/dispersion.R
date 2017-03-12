@@ -22,8 +22,8 @@ dispersionUiInput <- function(){
       condition = "input.dispersion_object == 'partition'",
       selectInput(
         "dispersion_partition", "partition",
-        choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)),
-        selected = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))[1]
+        choices = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]],
+        selected = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]][1]
         )
     ),
     textInput("dispersion_query", "query", value = "Suche"),

@@ -21,7 +21,7 @@ kwicUiInput <- function(drop = NULL){
     ),
     partition = conditionalPanel(
       condition = "input.kwic_object == 'partition'",
-      selectInput("kwic_partition", "partition", choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)))
+      selectInput("kwic_partition", "partition", choices = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]])
     ),
     query = textInput("kwic_query", "query", value = ""),
     neighbor = textInput("kwic_neighbor", "neighbor", value = ""),
@@ -187,12 +187,7 @@ kwicServer <- function(input, output, session, ...){
 
 #' @rdname polmineR_gui
 setMethod("kwic", "missing", function(){
-    assign(
-      "partitionNames",
-      value = unlist(sapply(c("partition", "pressPartition", "plprPartition"), getObjects)),
-      envir = .GlobalEnv
-    )
-    
+
     kwicGadgetUI <- shinyUI(fluidPage(
       theme = shinytheme("cerulean"),
       padding = 5,

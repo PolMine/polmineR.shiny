@@ -1,3 +1,16 @@
+.makePartitionDf <- function(){
+  partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
+  if (nrow(partitionDf) == 0){
+    partitionDF <- data.frame(name = ""[0], corpus = ""[0], size = integer())
+  } else {
+    rownames(partitionDf) <- NULL  
+    partitionDf[["object"]] <- NULL # identical with col 'name'
+  }
+  partitionDf
+}
+
+
+
 #' Building blocks for shiny apps and widgets.
 #' 
 #' 
@@ -13,6 +26,7 @@
 partitionUiInput <- function(){
   list(
     go = actionButton("partition_go", label="", icon = icon("play", lib="glyphicon")),
+    delete = actionButton("partition_delete", label = "", icon = icon("trash", lib = "glyphicon")),
     br(),
     br(),
     corpus = selectInput("partition_corpus", "corpus", choices = corpus()[["corpus"]], selected = corpus()[["corpus"]][1]),
@@ -39,19 +53,23 @@ partitionUiOutput <- function(){
 #' @rdname shiny_helper_functions
 #' @export partitionServer
 partitionServer <- function(input, output, session){
+  
+  # necessary (for a reason unknown) to get table filled upon starting app
+  output$partition_table <- DT::renderDataTable(.makePartitionDf())
+  
   observeEvent(
     input$partition_go,
     {
-      
       # if (input$partition_go > 0){
         defList <- lapply(
           setNames(input$partition_sAttributes, input$partition_sAttributes),
           function(x) input[[x]]
         )
         # to avid an error, do nothing if no sAttribute value is available/has been entered
-        if (!any(sapply(defList, is.null))){
+        if (length(input$partition_sAttributes) > 0 && !any(sapply(defList, is.null))){
+          noMessages <- 3 + if (is.null(input$partition_pAttribute)) 0 else 1
           withProgress(
-            message = "please wait ...", value = 0, max = 3, detail = "getting started",
+            message = "please wait ...", value = 0, max = noMessages, detail = "getting started",
             {
               P <- partition(
                 as.character(input$partition_corpus),
@@ -72,18 +90,13 @@ partitionServer <- function(input, output, session){
         }
         
         # update table with partitions
-        partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
-        partitionDf[["object"]] <- NULL
-        if (nrow(partitionDf) == 0){
-          partitionDF <- data.frame(name = ""[0], corpus = ""[0], size = integer())
-        } else {
-          rownames(partitionDf) <- NULL  
-        }
+        partitionDf <- .makePartitionDf()
         output$partition_table <- DT::renderDataTable(partitionDf)
         
+        # make partitions available to functions
         selectInputToUpdate <- c("kwic_partition", "context_partition", "dispersion_partition", "features_partition_x", "features_partition_y", "count_partition")
         for (toUpdate in selectInputToUpdate) {
-          updateSelectInput(session, toUpdate, choices = partitionDf$object, selected = NULL)
+          updateSelectInput(session, toUpdate, choices = partitionDf$name, selected = NULL)
         }
       # }
     }
@@ -111,6 +124,21 @@ partitionServer <- function(input, output, session){
     ))
   })
   
+  observeEvent(
+    input$partition_delete,
+    {
+      if (length(input$partition_table_rows_selected) > 0){
+        toDrop <- input$partition_table_rows_selected
+        partitionsToDrop <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]][toDrop]
+        # for (x in partitionsToDrop){
+          # print(x)
+          rm(list = partitionsToDrop, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+        # }
+        output$partition_table <- DT::renderDataTable(.makePartitionDf())
+      }
+    })
+  
+  
   # used by partitionGadget only
   retval <- observeEvent(
     input$partition_done,
@@ -132,11 +160,6 @@ partitionServer <- function(input, output, session){
       
     }
   )
-  
-  output$partition_table <- DT::renderDataTable(
-    data.frame(object = ""[0], name = ""[0], corpus = ""[0], size = integer())
-    )
-  
 }
 
 #' @export partitionGadget

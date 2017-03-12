@@ -19,7 +19,7 @@ contextUiInput <- function(){
     ),
     conditionalPanel(
       condition = "input.context_object == 'partition'",
-      selectInput("context_partition", "partition", choices = get("partitionNames", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)))
+      selectInput("context_partition", "partition", choices = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]])
     ),
     textInput("context_query", "query", value = ""),
     selectInput("context_pAttribute", "pAttribute:", choices = c("word", "pos", "lemma"), selected = getOption("polmineR.pAttribute"), multiple = TRUE),

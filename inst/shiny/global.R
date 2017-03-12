@@ -19,9 +19,3 @@ if (!".corpora" %in% names(.GlobalEnv)){
   message("... creating environment '.corpora'")
   .corpora <- new.env(parent = .GlobalEnv)
 }
-
-assign(
-  "partitionNames",
-  c(getObjects('partition'), getObjects('pressPartition'), getObjects('plprPartition')),
-  envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
-)
