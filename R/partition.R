@@ -16,7 +16,7 @@ partitionUiInput <- function(){
     br(),
     br(),
     corpus = selectInput("partition_corpus", "corpus", choices = corpus()[["corpus"]], selected = corpus()[["corpus"]][1]),
-    name = textInput(inputId = "partition_name", label = "name", value = "UNDEFINED"),
+    name = textInput(inputId = "partition_name", label = "name", value = "unnamed"),
     sAttributesA = selectInput(
       inputId = "partition_sAttributes", label = "sAttributes", multiple = TRUE,
       choices = sAttributes(corpus()[1, "corpus"])
@@ -43,20 +43,17 @@ partitionServer <- function(input, output, session){
     input$partition_go,
     {
       
-      if (input$partition_go > 0){
+      # if (input$partition_go > 0){
         defList <- lapply(
           setNames(input$partition_sAttributes, input$partition_sAttributes),
           function(x) input[[x]]
         )
-        # to avid an error, if no sAttribute value has been entered
-        if (any(sapply(defList, is.null))) return()
-        
-        withProgress(
-          message = "please wait ...", value = 0, max = 3, detail = "getting started",
-          {
-            assign(
-              input$partition_name,
-              partition(
+        # to avid an error, do nothing if no sAttribute value is available/has been entered
+        if (!any(sapply(defList, is.null))){
+          withProgress(
+            message = "please wait ...", value = 0, max = 3, detail = "getting started",
+            {
+              P <- partition(
                 as.character(input$partition_corpus),
                 def = defList,
                 name = input$partition_name,
@@ -65,16 +62,20 @@ partitionServer <- function(input, output, session){
                 xml = input$partition_xml,
                 mc = FALSE,
                 verbose = "shiny"
-              ),
-              envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
-            )
-          }
-        )
-        partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
-        if (nrow(partitionDf) == 0){
-          partitionDF <- data.frame(
-            object = ""[0], name = ""[0], corpus = ""[0], size = integer()
+              )
+            }
           )
+          assign(
+            input$partition_name, P,
+            envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
+          )
+        }
+        
+        # update table with partitions
+        partitionDf <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))
+        partitionDf[["object"]] <- NULL
+        if (nrow(partitionDf) == 0){
+          partitionDF <- data.frame(name = ""[0], corpus = ""[0], size = integer())
         } else {
           rownames(partitionDf) <- NULL  
         }
@@ -84,7 +85,7 @@ partitionServer <- function(input, output, session){
         for (toUpdate in selectInputToUpdate) {
           updateSelectInput(session, toUpdate, choices = partitionDf$object, selected = NULL)
         }
-      }
+      # }
     }
   )
   
@@ -110,6 +111,7 @@ partitionServer <- function(input, output, session){
     ))
   })
   
+  # used by partitionGadget only
   retval <- observeEvent(
     input$partition_done,
     {
