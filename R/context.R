@@ -19,7 +19,7 @@ contextUiInput <- function(){
     ),
     conditionalPanel(
       condition = "input.context_object == 'partition'",
-      selectInput("context_partition", "partition", choices = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]])
+      selectInput("context_partition", "partition", choices = character())
     ),
     textInput("context_query", "query", value = ""),
     selectInput("context_pAttribute", "pAttribute:", choices = c("word", "pos", "lemma"), selected = getOption("polmineR.pAttribute"), multiple = TRUE),
@@ -48,37 +48,34 @@ contextServer <- function(input, output, session){
       if (input$context_go > 0 && input$context_query != ""){
         
         if (input$context_object == "corpus"){
-          if (!input$context_corpus %in% ls(envir = get(".corpora", .GlobalEnv))){
+          if (!input$context_corpus %in% names(values$corpora)){
             withProgress(
               message = "preparing Corpus ...", value = 1, max = 1, detail = "counting",
-              {assign(
-                input$context_corpus,
-                Corpus$new(input$context_corpus, pAttribute = input$context_pAttribute),
-                envir = get(".corpora", .GlobalEnv)
-              )}
+              {
+                values$corpora[[input$context_corpus]] <- Corpus$new(input$context_corpus, pAttribute = input$context_pAttribute)
+              }
               
             )
           }
-          object <- get(input$context_corpus, envir = get(".corpora", .GlobalEnv))
+          object <- values$corpora[[input$context_corpus]]
         } else {
-          object <- get(input$context_partition, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+          object <- values$partitions[[input$context_partition]]
         }
         
         withProgress(
           message = "please wait ...", value = 0, max = 6, detail = "getting started",
           {
-            ctext <- context(
+            values[["context"]] <- context(
               .Object = object,
               query = rectifySpecialChars(input$context_query),
               pAttribute = input$context_pAttribute,
               left = input$context_window[1], right = input$context_window[1],
               verbose = "shiny"
             )
-            assign("ctext", ctext, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
           })
         
-        if (!is.null(ctext)){
-          return(DT::datatable(round(ctext, 2)@stat, selection = "single", rownames = FALSE))
+        if (!is.null(values[["context"]])){
+          return(DT::datatable(round(values[["context"]], 2)@stat, selection = "single", rownames = FALSE))
         } else {
           return(DT::datatable(data.frame(a = c(), b = c(), d = c())))
         }
@@ -97,10 +94,9 @@ contextServer <- function(input, output, session){
     input$context_table_rows_selected,
     {
       if (length(input$context_table_rows_selected) > 0){
-        ctext <- get("ctext", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
         updateTextInput(
           session, "kwic_neighbor",
-          value = ctext@stat[[input$context_pAttribute[1]]][input$context_table_rows_selected]
+          value = values[["context"]]@stat[[input$context_pAttribute[1]]][input$context_table_rows_selected]
         )
         if (input$kwic_object == "partition"){
           updateSelectInput(session, "kwic_object", selected = "partition")
@@ -123,7 +119,7 @@ contextServer <- function(input, output, session){
     {
       if (input$context_mail > 0){
         polmineR:::mail(
-          subset(round(get("ctext", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)), 2), rank_ll < 100)
+          subset(round(values[["context"]], 2), rank_ll < 100)
           )
       }
     }

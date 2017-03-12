@@ -9,8 +9,8 @@ featuresUiInput <- function(){
     
     x_partition = selectInput(
       "features_partition_x", "partition of interest",
-      choices = getObjects("partition", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)),
-      selected = getObjects("partition", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))[1]
+      choices = character(),
+      selected = character()
       ),
     
     object_y = radioButtons("features_object_y", "class of reference object", choices = list("partition", "corpus"), selected = "partition", inline = TRUE),
@@ -20,10 +20,7 @@ featuresUiInput <- function(){
     ),
     y_partition = conditionalPanel(
       condition = "input.features_object_y == 'partition'",
-      selectInput(
-        "features_partition_y", "reference partition",
-        choices = getObjects("partition", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
-      )
+      selectInput("features_partition_y", "reference partition", choices = character())
     ),
     included = radioButtons("features_included", "included", choices = list("TRUE", "FALSE"), selected = "FALSE", inline = TRUE),
     pAttribute = selectInput(
@@ -53,7 +50,7 @@ featuresServer <- function(input, output, session){
     {
       isolate({})
      
-       x = get(input$features_partition_x, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+       x = values$partitions[[input$features_partition_x]]
       
       if (!identical(x@pAttribute, input$features_pAttribute)){
          x <- enrich(x, pAttribute = input$features_pAttribute)
@@ -61,7 +58,7 @@ featuresServer <- function(input, output, session){
 
       y <- switch(
         input$features_object_y,
-        partition = get(input$features_partition_y, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)),
+        partition = values$partitions[[input$features_partition_y]],
         corpus = input$features_corpus_y
       )
        
@@ -75,7 +72,7 @@ featuresServer <- function(input, output, session){
       featuresObject <- compare(x = x, y = y, included = as.logical(input$features_included))
       featuresObject <- round(featuresObject, 2)
       retval <- as.data.frame(featuresObject@stat)
-      assign("featuresObject", value = featuresObject, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+      values[["features"]] <- featuresObject
       output$features_table <- DT::renderDataTable(
         DT::datatable(retval, selection = "single", rownames = FALSE)
       )
@@ -90,10 +87,10 @@ featuresServer <- function(input, output, session){
         updateSelectInput(session, "kwic_object", selected = "partition")
         updateSelectInput(
           session, "kwic_partition",
-          choices = getObjects("partition", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)),
+          choices = names(values$partitions),
           selected = input$features_partition_x
           )
-        featuresObject <- get("featuresObject", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+        featuresObject <- values[["features"]]
         token <- featuresObject@stat[["word"]][input$features_table_rows_selected]
         updateTextInput(session, "kwic_query", value = token[1])
         updateSelectInput(session, "kwic_pAttribute", selected = input$features_pAttribute)

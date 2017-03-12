@@ -20,11 +20,7 @@ dispersionUiInput <- function(){
     ),
     conditionalPanel(
       condition = "input.dispersion_object == 'partition'",
-      selectInput(
-        "dispersion_partition", "partition",
-        choices = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]],
-        selected = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]][1]
-        )
+      selectInput("dispersion_partition", "partition", choices = character())
     ),
     textInput("dispersion_query", "query", value = "Suche"),
     selectInput(
@@ -80,7 +76,7 @@ dispersionServer <- function(input, output, session){
     isolate({
       
       if (input$dispersion_object == "partition"){
-        object <- get(input$dispersion_partition, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+        object <- values$partitions[[input$dispersion_partition]]
       } else if (input$dispersion_object == "corpus"){
         object <- input$dispersion_corpus
       }
@@ -132,7 +128,7 @@ dispersionServer <- function(input, output, session){
   #   {
   #     if (input$dispersion_mail > 0){
   #       polmineR:::mail(
-  #         get("ctext", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
+  #         values[["context"]]
   #       )
   #     }
   #   }

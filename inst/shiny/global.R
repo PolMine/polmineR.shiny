@@ -10,15 +10,8 @@ assign(
   envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
 )
 
-assign(
-  "fulltext", "",
-  envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
-)
-
-if (!".corpora" %in% names(.GlobalEnv)){
-  message("... creating environment '.corpora'")
-  .corpora <- new.env(parent = .GlobalEnv)
-}
 
 values <- reactiveValues()
 values[["partitions"]] <- list()
+values[["corpora"]] <- list()
+values[["fulltext"]] <- ""

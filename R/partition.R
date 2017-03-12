@@ -88,10 +88,6 @@ partitionServer <- function(input, output, session){
               )
             }
           )
-          # assign(
-          #   input$partition_name, P,
-          #   envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
-          # )
           values$partitions[[input$partition_name]] <- P
         }
         
@@ -135,14 +131,7 @@ partitionServer <- function(input, output, session){
     {
       if (length(input$partition_table_rows_selected) > 0){
         toDrop <- input$partition_table_rows_selected
-        # partitionsToDrop <- partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]][toDrop]
-        # for (x in partitionsToDrop){
-          # print(x)
-          # rm(list = partitionsToDrop, envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
-        # }
-        for (x in .makePartitionDf()[toDrop]){
-          values$partitions[[toDrop]] <- NULL
-        }
+        for (x in .makePartitionDf()[toDrop]) values$partitions[[toDrop]] <- NULL
         output$partition_table <- DT::renderDataTable(.makePartitionDf())
       }
     })

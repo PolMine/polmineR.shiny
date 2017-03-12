@@ -21,7 +21,7 @@ kwicUiInput <- function(drop = NULL){
     ),
     partition = conditionalPanel(
       condition = "input.kwic_object == 'partition'",
-      selectInput("kwic_partition", "partition", choices = partition(get(".polmineR_shiny_cache", envir = .GlobalEnv))[["name"]])
+      selectInput("kwic_partition", "partition", choices = character())
     ),
     query = textInput("kwic_query", "query", value = ""),
     neighbor = textInput("kwic_neighbor", "neighbor", value = ""),
@@ -88,13 +88,13 @@ kwicServer <- function(input, output, session, ...){
         if (input$kwic_object == "corpus"){
           object <- input$kwic_corpus
         } else {
-          object <- get(input$kwic_partition, get(".polmineR_shiny_cache", envir = .GlobalEnv))
+          object <- values$partitions[[input$kwic_partition]]
         }
         
         withProgress(
           message="please wait", value = 0, max = 5, detail="preparing data",
           {
-            kwicObject <- polmineR::kwic(
+            values[["kwic"]] <- polmineR::kwic(
               .Object = object,
               query = rectifySpecialChars(input$kwic_query),
               pAttribute = ifelse(is.null(input$kwic_pAttribute), "word", input$kwic_pAttribute),
@@ -105,17 +105,13 @@ kwicServer <- function(input, output, session, ...){
               neighbor = input$kwic_neighbor,
               cpos = TRUE # required for reading
             )
-            assign(
-              "kwicObject", kwicObject,
-              envir = get(".polmineR_shiny_cache", envir = .GlobalEnv)
-              )
           }
         ) # end withProgress
         
-        if (is.null(kwicObject)){
-          tab <- data.frame(left = ""[0], node = ""[0], right = ""[0])
+        if (is.null(values[["kwic"]])){
+          tab <- data.frame(left = character(), node = character(), right = character())
         } else {
-          tab <- kwicObject@table
+          tab <- values[["kwic"]]@table
           tab[["hit_no"]] <- NULL
         }
         
@@ -152,9 +148,8 @@ kwicServer <- function(input, output, session, ...){
     input$kwic_table_rows_selected,
     {
       if (length(input$kwic_table_rows_selected) > 0){
-        kwicObject <- get("kwicObject", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
-        corpusType <- RegistryFile$new(kwicObject@corpus)$getProperties()[["type"]]
-        fulltext <- html(kwicObject,
+        corpusType <- RegistryFile$new(values[["kwic"]]@corpus)$getProperties()[["type"]]
+        fulltext <- html(values[["kwic"]],
                          input$kwic_table_rows_selected,
                          type = corpusType,
                          verbose = TRUE
@@ -170,11 +165,7 @@ kwicServer <- function(input, output, session, ...){
   observeEvent(
     input$kwic_mail,
     {
-      if (input$kwic_mail > 0){
-        polmineR:::mail(
-          get("kwicObject", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
-        )
-      }
+      if (input$kwic_mail > 0) polmineR:::mail(values[["kwic"]])
     }
   )
   
