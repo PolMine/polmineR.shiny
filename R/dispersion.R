@@ -128,7 +128,7 @@ dispersionServer <- function(input, output, session){
   #   {
   #     if (input$dispersion_mail > 0){
   #       polmineR:::mail(
-  #         values[["context"]]
+  #         values[["cooccurrences"]]
   #       )
   #     }
   #   }

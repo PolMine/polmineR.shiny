@@ -1,12 +1,12 @@
 Package: polmineR.shiny
 Type: Package
 Title: Shiny apps and widgets to expand the polmineR package
-Version: 0.2.2
-Date: 2017-03-12
+Version: 0.2.3
+Date: 2017-03-13
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Depends:
-    polmineR,
+    polmineR (>= 0.7.1.9011),
     methods
 Imports:
     miniUI,
@@ -25,7 +25,7 @@ License: GPL-3
 Collate:
     'corpus.R'
     'partition.R'
-    'context.R'
+    'cooccurrences.R'
     'kwic.R'
     'polmineR.R'
     'count.R'

@@ -9,7 +9,7 @@ shinyUI(
     id = "polmineR",
     
     tabPanel(
-      "corpus",
+  "corpus",
       sidebarLayout(
         sidebarPanel = sidebarPanel(corpusUiInput()),
         mainPanel = mainPanel(
@@ -38,10 +38,10 @@ shinyUI(
     ),
     
     tabPanel(
-      "context",
+      "cooccurrences",
       sidebarLayout(
-        sidebarPanel = sidebarPanel(contextUiInput()),
-        mainPanel = mainPanel(contextUiOutput())
+        sidebarPanel = sidebarPanel(cooccurrencesUiInput()),
+        mainPanel = mainPanel(cooccurrencesUiOutput())
       )
     ),
     
