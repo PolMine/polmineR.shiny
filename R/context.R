@@ -94,6 +94,7 @@ contextServer <- function(input, output, session){
     input$context_table_rows_selected,
     {
       if (length(input$context_table_rows_selected) > 0){
+        updateTextInput(session, "kwic_query", value = values[["context"]]@query)
         updateTextInput(
           session, "kwic_neighbor",
           value = values[["context"]]@stat[[input$context_pAttribute[1]]][input$context_table_rows_selected]

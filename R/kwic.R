@@ -109,26 +109,28 @@ kwicServer <- function(input, output, session, ...){
         ) # end withProgress
         
         if (is.null(values[["kwic"]])){
-          tab <- data.frame(left = character(), node = character(), right = character())
+          retval <- data.frame(left = character(), node = character(), right = character())
+        } else if (nrow(values[["kwic"]]@table) == 0){
+          retval <- data.frame(left = character(), node = character(), right = character())
         } else {
           tab <- values[["kwic"]]@table
           tab[["hit_no"]] <- NULL
+          if (length(input$kwic_meta) == 0){
+            retval <- data.frame(no = c(1:nrow(tab)), tab)
+          } else if (length(input$kwic_meta)){
+            metaRow <- unlist(lapply(
+              c(1:nrow(tab)),
+              function(i){
+                paste(unlist(lapply(tab[i,c(1:length(input$kwic_meta))], as.character)), collapse=" | ")
+              }
+            ))
+            retval <- data.frame(meta = metaRow, tab[,(length(input$kwic_meta)+1):ncol(tab)])
+          }
         }
         
-        if (length(input$kwic_meta) == 0 && nrow(tab) > 0){
-          retval <- data.frame(no = c(1:nrow(tab)), tab)
-        } else if (length(input$kwic_meta) > 0){
-          metaRow <- unlist(lapply(
-            c(1:nrow(tab)),
-            function(i){
-              paste(unlist(lapply(tab[i,c(1:length(input$kwic_meta))], as.character)), collapse=" | ")
-            }
-          ))
-          retval <- data.frame(meta = metaRow, tab[,(length(input$kwic_meta)+1):ncol(tab)])
-        }
         
       } else {
-        retval <- data.frame(left = ""[0], node = ""[0], right = ""[0])
+        retval <- data.frame(left = character(), node = character(), right = character())
       }
       
     })
