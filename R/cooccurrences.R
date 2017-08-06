@@ -112,8 +112,7 @@ cooccurrencesServer <- function(input, output, session){
         updateSelectInput(session, "kwic_window", selected = input$cooccurrences_window)
         updateSelectInput(session, "kwic_pAttribute", selected = input$cooccurrences_pAttribute)
         updateNavbarPage(session, "polmineR", selected = "kwic")
-        Time <- as.character(Sys.time())
-        updateSelectInput(session, "kwic_read", choices = Time, selected = Time)
+        values[["kwic_go"]] <- as.character(Sys.time()) # will initiate kwic preparation & display
       }
     })
   
@@ -135,7 +134,7 @@ cooccurrencesServer <- function(input, output, session){
 #' @rdname polmineR_gui
 setMethod("cooccurrences", "missing", function(){
   if (requireNamespace("shiny", quietly=TRUE)){
-    shiny::runApp(system.file("shiny", "cooccurrences", package="polmineR"), launch.browser=TRUE)  
+    shiny::runApp(system.file("shiny", "cooccurrences", package = "polmineR"), launch.browser = TRUE)  
     # shiny::runApp("/Users/blaette/Lab/github/polmineR/inst/shiny/cooccurrences", launch.browser=TRUE)
   } else {
     message("package shiny not available")

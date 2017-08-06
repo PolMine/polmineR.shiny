@@ -35,10 +35,6 @@ kwicUiInput <- function(drop = NULL){
       choices = pAttributes(corpus()[["corpus"]][1])
     ),
     window = sliderInput("kwic_window", "window", min = 1, max = 25, value = getOption("polmineR.left")),
-    read = conditionalPanel(
-      condition = "input.kwic_go == -1",
-      selectInput("kwic_read", "read", choices = Sys.time())
-    ),
     br3 = br()
   )
   if (!is.null(drop)) for (x in drop) divs[[x]] <- NULL
@@ -75,15 +71,15 @@ kwicServer <- function(input, output, session, ...){
     updateSelectInput(session, "kwic_meta", choices = new_sAttr, selected = NULL)
   })
   
+
   output$kwic_table <- DT::renderDataTable({
     
     input$kwic_go
-    input$kwic_read
-    
+    values[["kwic_go"]]
+
     isolate({
       
-      startingTime <- get("startingTime", envir = get(".polmineR_shiny_cache", envir = .GlobalEnv))
-      if ((input$kwic_go > 0 || input$kwic_read != startingTime) && input$kwic_query != ""){
+      if ((input$kwic_go > 0 || values[["kwic_go"]] != values[["startingTime"]]) && input$kwic_query != ""){
         
         if (input$kwic_object == "corpus"){
           object <- input$kwic_corpus
@@ -92,7 +88,7 @@ kwicServer <- function(input, output, session, ...){
         }
         
         withProgress(
-          message="please wait", value = 0, max = 5, detail="preparing data",
+          message = "please wait", value = 0, max = 5, detail = "preparing data",
           {
             values[["kwic"]] <- polmineR::kwic(
               .Object = object,
